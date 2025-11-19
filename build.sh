@@ -18,7 +18,7 @@
 VENV_DIR="venv"
 PYTHON_CMD="python3.11" # 优先使用新安装的版本
 FALLBACK_PYTHON_CMD="python3"
-MAIN_SCRIPT="./1_linux.py"
+MAIN_SCRIPT="./main.py"
 APP_NAME="TunnelManager"
 
 # 确保我们位于脚本所在的目录
