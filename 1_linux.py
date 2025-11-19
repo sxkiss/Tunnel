@@ -305,6 +305,7 @@ class TunnelManager:
         self.create_header()
         self.create_tunnel_list()
         self.create_control_panel()
+        self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
     def create_header(self) -> None:
         header = ttk.Frame(self.main_frame, style='Custom.TFrame')
@@ -496,8 +497,8 @@ class TunnelManager:
                 return None
             
             pids = result.stdout.strip().split('\n')
-            if pids and pids:
-                return int(pids)
+            if pids:
+                return int(pids[0])
         except (ValueError, IndexError):
             return None
         except Exception as exc:
@@ -644,6 +645,14 @@ class TunnelManager:
                 self.stop_tunnel(index)
             else:
                 self.start_tunnel(index)
+
+    def on_close(self) -> None:
+        """Handles window closing to ensure all tunnels are stopped."""
+        if self._ask_yes_no("退出确认", "确定要退出吗？所有正在运行的隧道都将被停止。"):
+            for i in range(len(self.tunnels)):
+                if self.tunnels[i].get('process_pid'):
+                    self.stop_tunnel(i)
+            self.root.destroy()
 
     def run(self) -> None:
         if not self.use_gui:
