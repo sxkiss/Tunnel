@@ -478,6 +478,33 @@ class TunnelManager:
                 return idx
         return None
 
+    def _find_pid_by_port(self, port: int) -> Optional[int]:
+        """根据端口号查找监听进程的 PID (仅限非 Windows 系统)"""
+        if platform.system() == "Windows":
+            # Windows 拥有不同的命令，例如 `netstat -aon | findstr <port>`。
+            # 此处暂时不实现 Windows 的逻辑，因为 PID 存储是主要问题。
+            return None
+
+        if not shutil.which('lsof'):
+            self._show_error("错误", "未找到 'lsof' 命令，无法通过端口号停止隧道。\n请安装 lsof (例如: sudo apt install lsof)")
+            return None
+
+        try:
+            cmd = ['lsof', '-i', f':{port}', '-t']
+            result = subprocess.run(cmd, capture_output=True, text=True, check=False)
+            if result.returncode != 0 or not result.stdout.strip():
+                return None
+            
+            pids = result.stdout.strip().split('\n')
+            if pids and pids:
+                return int(pids)
+        except (ValueError, IndexError):
+            return None
+        except Exception as exc:
+            self._show_error("查找进程错误", f"通过端口 {port} 查找进程时出错: {exc}")
+            return None
+        return None
+
     def start_tunnel(self, index: int) -> bool:
         tunnel = self.tunnels[index]
         try:
@@ -523,37 +550,48 @@ class TunnelManager:
             return False
 
     def stop_tunnel(self, index: int) -> bool:
-        pid = self.tunnels[index].get('process_pid')
-        if not pid:
-            self._show_info("提示", f"隧道 {self.tunnels[index]['name']} 已经停止")
+        tunnel = self.tunnels[index]
+        pid_to_kill = None
+
+        if platform.system() == "Windows":
+            pid_to_kill = tunnel.get('process_pid')
+        else:
+            local_port = tunnel.get('local_port')
+            if not local_port:
+                self._show_error("错误", f"隧道 {tunnel['name']} 未配置本地端口，无法停止。")
+                return False
+            pid_to_kill = self._find_pid_by_port(local_port)
+
+        if not pid_to_kill:
+            self._show_info("提示", f"隧道 {tunnel['name']} 已经停止")
+            if tunnel.get('process_pid') is not None:
+                self.tunnels[index]['process_pid'] = None
+                self.save_config()
+                self.refresh_tunnel_list()
             return True
 
         try:
             if platform.system() == "Windows":
                 subprocess.run(
-                    ['taskkill', '/F', '/PID', str(pid)],
-                    shell=False,
-                    check=True,
-                    creationflags=subprocess.CREATE_NO_WINDOW
+                    ['taskkill', '/F', '/PID', str(pid_to_kill)],
+                    shell=False, check=True, creationflags=subprocess.CREATE_NO_WINDOW
                 )
             else:
-                subprocess.run(['kill', '-9', str(pid)], shell=False, check=True)
+                subprocess.run(['kill', '-9', str(pid_to_kill)], shell=False, check=True)
+            
             self.tunnels[index]['process_pid'] = None
             self.save_config()
             self.refresh_tunnel_list()
-            self._show_info("成功", f"隧道 {self.tunnels[index]['name']} 已停止")
+            self._show_info("成功", f"隧道 {tunnel['name']} 已停止")
             return True
-        except subprocess.CalledProcessError as exc:
-            if "没有找到进程" in str(exc):
-                self.tunnels[index]['process_pid'] = None
-                self.save_config()
-                self.refresh_tunnel_list()
-                self._show_info("提示", f"隧道 {self.tunnels[index]['name']} 进程不存在，已同步状态")
-                return True
-            self._show_error("错误", f"停止隧道失败: {exc}")
-            return False
+        except subprocess.CalledProcessError:
+            self.tunnels[index]['process_pid'] = None
+            self.save_config()
+            self.refresh_tunnel_list()
+            self._show_info("提示", f"隧道 {tunnel['name']} 进程可能已不存在，状态已同步")
+            return True
         except Exception as exc:
-            self._show_error("错误", f"停止隧道失败: {exc}")
+            self._show_error("错误", f"停止隧道时发生未知错误: {exc}")
             return False
 
     # 登录功能已根据用户要求移除
