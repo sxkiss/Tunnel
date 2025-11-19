@@ -45,26 +45,21 @@ fi
 
 # --- 虚拟环境设置 ---
 echo ">>> [1/4] 正在检查并激活 Python 虚拟环境 ('$VENV_DIR')..."
-if [ ! -d "$VENV_DIR" ]; then
-    echo "未检测到虚拟环境，正在创建..."
-    $PYTHON_CMD -m venv "$VENV_DIR"
-    if [ $? -ne 0 ]; then
-        echo "创建虚拟环境失败。"
-        exit 1
-    fi
-else
-    echo "检测到已存在的虚拟环境，将直接使用。"
+echo "为确保构建环境纯净，正在强制重新创建虚拟环境..."
+rm -rf "$VENV_DIR"
+$PYTHON_CMD -m venv "$VENV_DIR"
+if [ $? -ne 0 ]; then
+    echo "创建虚拟环境失败。"
+    exit 1
 fi
-source "$VENV_DIR/bin/activate"
-
 # --- 安装依赖 ---
 echo ">>> [2/4] 正在虚拟环境中安装/更新 PyInstaller..."
-pip install --upgrade pip wheel
-pip install --upgrade pyinstaller
+"$VENV_DIR/bin/pip" install --upgrade pip wheel
+"$VENV_DIR/bin/pip" install --upgrade pyinstaller
 
 # --- 执行打包 ---
 echo ">>> [3/4] 正在使用 PyInstaller 打包应用..."
-pyinstaller \
+"$VENV_DIR/bin/pyinstaller" \
     --name "$APP_NAME" \
     --onefile \
     --windowed \
@@ -77,6 +72,3 @@ pyinstaller \
 echo ">>> [4/4] 打包完成！"
 echo "可执行文件已生成在 'dist' 目录中。"
 echo "----------------------------------------------------"
-
-# 退出虚拟环境
-deactivate
