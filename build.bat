@@ -19,7 +19,7 @@ rem --- 配置 ---
 set VENV_DIR=venv
 set PYTHON_CMD=python
 rem ！！！【请修改这里】将 "your_main_script.py" 替换为你的主程序文件名 ！！！
-set MAIN_SCRIPT=your_main_script.py
+set MAIN_SCRIPT=main.py
 set APP_NAME=TunnelManager
 set REQUIREMENTS_FILE=requirements.txt
 
