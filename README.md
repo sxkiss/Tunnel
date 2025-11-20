@@ -34,91 +34,69 @@
 ./TunnelManager --cli [命令]
 
 # 在 Windows 上
-TunnelManager.exe --cli [命令]
-```
+TunnelManager.exe --cli [命令]```
 
 **可用命令:**
 
 *   `list` (默认): 显示所有隧道的配置和状态。
-    ```bash
-    ./TunnelManager --cli list
-    ```
-*   `add`: 添加一个新的隧道连接。
-    ```bash
-    # 示例：添加一个名为 "公司RDP" 的连接，它将远程的 rdp.example.com 映射到本地的 3389 端口
-    ./TunnelManager --cli add "公司RDP" rdp.example.com 3389 --protocol rdp
-    ```
+*   `add`: 添加一个新的隧道连接。 (`./TunnelManager --cli add "名称" 主机名 端口 --protocol 协议`)
 *   `update`: 更新一个已有的隧道连接。
-    ```bash
-    # 示例：将 "公司RDP" 的远程主机更改为 new.example.com，本地端口更改为 3390
-    ./TunnelManager --cli update "公司RDP" --hostname new.example.com --local-port 3390
-    ```
 *   `delete`: 删除一个隧道连接。
-    ```bash
-    ./TunnelManager --cli delete "公司RDP"
-    ```
-*   `start`: 启动一个隧道连接（开始在本地监听）。
-    ```bash
-    ./TunnelManager --cli start "公司RDP"
-    ```
-*   `stop`: 停止一个隧道连接（停止本地监听）。
-    ```bash
-    ./TunnelManager --cli stop "公司RDP"
-    ```
+*   `start`: 启动一个隧道连接。
+*   `stop`: 停止一个隧道连接。
 
 ---
 
 ## 二、 多平台打包说明
 
-本项目提供了一套自动化的脚本，用于在不同操作系统上打包生成独立的可执行文件。
+本项目提供了一套平台原生的自动化脚本，用于在不同操作系统上打包生成独立的可执行文件。所有构建脚本都已实现智能化，首次运行时会自动创建虚拟环境并安装依赖；后续运行时则会跳过这些步骤，实现快速打包。
 
-**核心原则**: 打包操作必须在目标操作系统上进行（例如，在 Windows 上打包 `.exe`，在 macOS 上打包 `.app`）。
+**核心原则**: 打包操作必须在目标操作系统上进行（例如，在 Windows 上打包 `.exe`）。
 
 ### 1. 在 Windows 上打包
 
-#### 首次环境准备
+我们为传统的 **CMD** 和现代的 **PowerShell** 提供了两套完全独立的脚本，请根据您打开的终端类型选择对应的指令。
 
-如果您的 Windows 系统中没有安装 Python，脚本会自动引导您完成安装：
+#### 首次环境准备 (仅需一次)
 
-1.  在项目根目录找到 `setup_environment.bat` 文件。
-2.  **右键点击**该文件，选择 **“以管理员身份运行”**。
-3.  脚本会自动下载并静默安装 Python，同时配置好系统路径。
-4.  安装完成后，**务必关闭并重新打开**一个新的终端窗口。
+如果您的 Windows 系统中没有安装 Python：
 
-#### 执行打包
+*   **CMD 用户**:
+    1.  找到 `install_python.bat` 文件。
+    2.  **右键点击** -> **以管理员身份运行**。
+*   **PowerShell 用户**:
+    1.  找到 `install_python.ps1` 文件。
+    2.  **右键点击** -> **使用 PowerShell 运行** (并同意管理员权限)。
 
-1.  直接**双击运行**项目根目录下的 `build.bat` 文件。
-2.  脚本会自动创建虚拟环境、安装依赖并执行打包。
+脚本会自动下载并静默安装 Python。完成后，**请务必关闭并重新打开一个新的终端窗口**。
 
-### 2. 在 Linux (Debian/Ubuntu) 上打包
+#### 日常构建
 
-#### 首次环境准备
+*   **CMD 用户**:
+    ```cmd
+    build.bat
+    ```
+*   **PowerShell 用户**:
+    ```powershell
+    .\build.ps1
+    ```
 
-如果您的系统中没有安装符合要求的 Python 版本：
+### 2. 在 Linux & macOS 上打包
+
+Linux 和 macOS 使用同一套 Shell 脚本。
+
+#### 首次环境准备 (仅需一次)
+
+如果您的系统中没有安装 Python：
 
 1.  打开终端，进入项目目录。
-2.  给环境安装脚本赋予执行权限：`chmod +x setup_environment.sh`
-3.  以 `sudo` 权限运行脚本：`sudo ./setup_environment.sh`
-4.  脚本会自动安装编译依赖，并从源码编译安装 Python 3.11.3。
+2.  给环境安装脚本赋予执行权限：`chmod +x install_python.sh`
+3.  以 `sudo` 权限运行脚本：`sudo ./install_python.sh`
 
-#### 执行打包
+脚本会自动检测您的系统发行版 (Debian/Ubuntu, Fedora/CentOS, Arch) 或 macOS (使用 Homebrew)，并调用对应的包管理器来安装 Python。
 
-1.  打开终端，进入项目目录。
-2.  给构建脚本赋予执行权限：`chmod +x build.sh`
-3.  运行脚本：`./build.sh`
+#### 日常构建
 
-### 3. 在 macOS 上打包
-
-#### 首次环境准备
-
-macOS 通常不自带 `python3` 命令。推荐使用 [Homebrew](https://brew.sh/) 来安装：
-```bash
-brew install python
-```
-
-#### 执行打包
-
-操作与 Linux 完全相同：
 1.  打开终端，进入项目目录。
 2.  给构建脚本赋予执行权限：`chmod +x build.sh`
 3.  运行脚本：`./build.sh`
