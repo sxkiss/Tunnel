@@ -930,7 +930,8 @@ def main() -> None:
     cli_flag = '--cli' in raw_args
 
     filtered_args = [arg for arg in raw_args if arg not in ('--cli', '--force-gui')]
-    display_available = bool(os.environ.get('DISPLAY'))
+    is_windows = platform.system() == "Windows"
+    display_available = bool(os.environ.get('DISPLAY')) or is_windows
     use_cli = cli_flag or (not force_gui and not display_available)
 
     if use_cli:

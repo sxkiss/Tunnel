@@ -96,13 +96,24 @@ else {
 # --- 6. Run PyInstaller ---
 Write-Host ""
 Write-Host ">>> [6/6] Bundling the application with PyInstaller..." -ForegroundColor Cyan
-$pyinstallerArgs = "--name", "`"$appName`"", "--onefile", "--windowed", "--clean", $mainScript
+$pyinstallerArgs = "--name", "`"$appName`"", "--windowed", "--clean", "--hidden-import", "tkinter.ttk", "--hidden-import", "tkinter.messagebox", "--hidden-import", "tkinter.scrolledtext", $mainScript
 Invoke-CommandWithErrorHandling -command $venvPyInstaller -arguments $pyinstallerArgs
+
+# --- 7. Create Zip Archive ---
+Write-Host ""
+Write-Host ">>> [7/7] Creating ZIP archive for distribution..." -ForegroundColor Cyan
+$sourceDir = Join-Path -Path $scriptDir -ChildPath "dist\$appName"
+$zipFile = Join-Path -Path $scriptDir -ChildPath "dist\$appName.zip"
+if (Test-Path $zipFile) {
+    Remove-Item $zipFile
+}
+tar.exe -a -c -f $zipFile -C $sourceDir .
+Write-Host "      Archive created at: $zipFile"
 
 # --- Done ---
 Write-Host ""
 Write-Host "----------------------------------------------------" -ForegroundColor Green
 Write-Host "Build successful!" -ForegroundColor Green
-Write-Host "The executable '$appName.exe' is located in the 'dist' directory." -ForegroundColor Green
+Write-Host "A distributable ZIP file is located at: dist\$appName.zip" -ForegroundColor Green
 Write-Host "----------------------------------------------------" -ForegroundColor Green
 Read-Host "Press Enter to finish"

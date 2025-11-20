@@ -3,7 +3,7 @@ build/
 
 # Dist directory - ignore all, but keep the main executable
 dist/*
-!dist/TunnelManager.exe
+!dist/TunnelManager.zip
 !dist/TunnelManager
 *.spec
 
