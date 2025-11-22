@@ -5,14 +5,45 @@ build/
 dist/*
 !dist/TunnelManager.zip
 !dist/TunnelManager
-*.spec
 
 # Virtual environment
 venv/
 .venv/
 env/
 .env
+.venv_android/
 
 # Python cache
 __pycache__/
 *.pyc
+
+# IDE
+.vscode/
+.idea/
+
+# Spec workflow
+.spec-workflow/
+
+# Android build artifacts
+.buildozer/
+bin/*
+!bin/*.apk
+build.log
+gradle_debug.log
+p4a_temp/
+dep_downloads/
+android/deps_cache/
+android/android/
+android/local_recipes/
+
+# Kivy compiled files
+*.so
+*.c
+*.html
+*.cpp
+.so.*
+
+# Keep source code
+!android/main.py
+!src/
+!buildozer.spec
